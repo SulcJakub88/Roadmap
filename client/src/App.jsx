@@ -105,6 +105,7 @@ export default function App() {
   const [filterRequester, setFilterRequester] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterJiraStatus, setFilterJiraStatus] = useState("");
+  const [filterProject, setFilterProject] = useState("");
   const [jiraDraftItem, setJiraDraftItem] = useState(null);
   const [noteDraftId, setNoteDraftId] = useState(null);
   const [noteDraftText, setNoteDraftText] = useState("");
@@ -186,7 +187,8 @@ export default function App() {
       (!filterTimeframe || (i.timeframeV2 || i.timeframeOriginal || "").trim() === filterTimeframe) &&
       (!filterRequester || (i.requester || "").trim() === filterRequester) &&
       (!filterStatus || i.status === filterStatus) &&
-      (!filterJiraStatus || (i.jiraStatusRaw || "").trim() === filterJiraStatus)
+      (!filterJiraStatus || (i.jiraStatusRaw || "").trim() === filterJiraStatus) &&
+      (!filterProject || i.appId === filterProject)
   );
   const unsortedCount = items.filter((i) => !i.appId).length;
   const jiraLinkedCount = items.filter((i) => i.jiraKey).length;
@@ -888,6 +890,14 @@ export default function App() {
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          <select className="rm-input mono" style={{ fontSize: 11.5, padding: "4px 8px" }} value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>
+            <option value="">Projekt: vše</option>
+            {apps.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
           <select className="rm-input mono" style={{ fontSize: 11.5, padding: "4px 8px" }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option value="">Stav: vše</option>
             {STATUSES.map((s) => (
@@ -920,7 +930,7 @@ export default function App() {
               </option>
             ))}
           </select>
-          {(filterStatus || filterTimeframe || filterRequester || filterJiraStatus) && (
+          {(filterStatus || filterTimeframe || filterRequester || filterJiraStatus || filterProject) && (
             <button
               className="rm-btn"
               onClick={() => {
@@ -928,6 +938,7 @@ export default function App() {
                 setFilterTimeframe("");
                 setFilterRequester("");
                 setFilterJiraStatus("");
+                setFilterProject("");
               }}
             >
               Zrušit filtry
