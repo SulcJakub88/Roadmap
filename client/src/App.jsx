@@ -992,7 +992,7 @@ export default function App() {
             );
           })()}
 
-        {addingItemFor && <ItemForm onSave={(d) => addItem(addingItemFor, d)} onCancel={() => setAddingItemFor(null)} />}
+        {addingItemFor && <ItemForm pw={pw} onSave={(d) => addItem(addingItemFor, d)} onCancel={() => setAddingItemFor(null)} />}
 
         {visibleItems.length === 0 && !addingItemFor && (
           <div style={{ color: "#5b6272", fontSize: 13, padding: "30px 0", textAlign: "center" }}>
@@ -1015,6 +1015,7 @@ export default function App() {
                     <div style={{ padding: 12 }}>
                       <ItemForm
                         initial={item}
+                        pw={pw}
                         onSave={(d) => {
                           updateItem(item.id, d);
                           setEditingItem(null);
@@ -1291,6 +1292,7 @@ export default function App() {
             >
               <ItemForm
                 initial={item}
+                pw={pw}
                 onSave={(d) => {
                   updateItem(item.id, d);
                   setEditingItem(null);
@@ -1391,11 +1393,36 @@ function BoardView({ items, apps, selectedApp, onOpen, selectedIds, toggleSelect
   );
 }
 
-function ItemForm({ initial, onSave, onCancel }) {
+function ItemForm({ initial, pw, onSave, onCancel }) {
   const [title, setTitle] = useState(initial?.title || "");
   const [status, setStatus] = useState(initial?.status || "new_idea");
   const [desc, setDesc] = useState(initial?.desc || "");
   const [summary, setSummary] = useState(initial?.summary || "");
+  const [summarizing, setSummarizing] = useState(false);
+  const [summarizeError, setSummarizeError] = useState(null);
+
+  async function generateSummary() {
+    if (!desc.trim()) {
+      setSummarizeError("Nejdřív vyplň popis, ať má AI z čeho shrnout.");
+      return;
+    }
+    setSummarizing(true);
+    setSummarizeError(null);
+    try {
+      const res = await fetch("/api/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-app-password": pw },
+        body: JSON.stringify({ title, desc }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Shrnutí selhalo");
+      setSummary(data.summary);
+    } catch (e) {
+      setSummarizeError(e.message);
+    } finally {
+      setSummarizing(false);
+    }
+  }
   const [jiraKey, setJiraKey] = useState(initial?.jiraKey || "");
   const [requester, setRequester] = useState(initial?.requester || "");
   const [priority, setPriority] = useState(initial?.priority || "2");
@@ -1496,7 +1523,18 @@ function ItemForm({ initial, onSave, onCancel }) {
       </div>
       <textarea className="rm-input" style={{ width: "100%", marginBottom: 8, resize: "vertical", minHeight: 50 }} placeholder="Stručný popis..." value={desc} onChange={(e) => setDesc(e.target.value)} />
       <div style={{ marginBottom: 8 }}>
-        <div style={{ fontSize: 10.5, color: "#5b6272", marginBottom: 3 }}>Shrnutí pro export/management (pokud vyplněno, použije se místo popisu v XLSX exportu)</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+          <div style={{ fontSize: 10.5, color: "#5b6272" }}>Shrnutí pro export/management (pokud vyplněno, použije se místo popisu v XLSX exportu)</div>
+          <button
+            type="button"
+            className="rm-btn"
+            style={{ fontSize: 10.5, padding: "3px 8px", borderColor: "#5b8cff", color: "#5b8cff" }}
+            onClick={generateSummary}
+            disabled={summarizing}
+          >
+            {summarizing ? "Generuju…" : "✨ Vygenerovat pomocí AI"}
+          </button>
+        </div>
         <textarea
           className="rm-input"
           style={{ width: "100%", resize: "vertical", minHeight: 40 }}
@@ -1504,6 +1542,7 @@ function ItemForm({ initial, onSave, onCancel }) {
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
         />
+        {summarizeError && <div style={{ fontSize: 11, color: "#e2626b", marginTop: 4 }}>{summarizeError}</div>}
       </div>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button className="rm-btn" onClick={onCancel}>
