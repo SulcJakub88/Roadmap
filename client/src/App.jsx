@@ -1356,6 +1356,27 @@ function BoardView({ items, apps, selectedApp, onOpen, selectedIds, toggleSelect
                         </span>
                       )}
                     </div>
+                    {(item.noteLog || []).length > 0 &&
+                      (() => {
+                        const last = item.noteLog[item.noteLog.length - 1];
+                        return (
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 4, marginTop: 5 }}>
+                            <StickyNote size={11} style={{ color: "#e8a33d", marginTop: 1, flexShrink: 0 }} />
+                            <span
+                              style={{
+                                fontSize: 11,
+                                color: "#e8a33d",
+                                fontStyle: "italic",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {last.text}
+                            </span>
+                          </div>
+                        );
+                      })()}
                   </div>
                 );
               })}
