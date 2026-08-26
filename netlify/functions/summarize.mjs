@@ -16,9 +16,8 @@ export default async (req) => {
   try {
     const client = new Anthropic();
     const response = await client.messages.create({
-      model: "claude-opus-5",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 300,
-      output_config: { effort: "medium" },
       system:
         "Jsi asistent pro produktový roadmap tým. Z dlouhého technického zadání uděláš krátké shrnutí " +
         "srozumitelné pro management (2 krátké řádky, žádné nadpisy typu 'Popis problému' apod.). " +
