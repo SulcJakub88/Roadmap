@@ -207,6 +207,7 @@ export default function App() {
       title: line,
       status: "new_idea",
       desc: "",
+      summary: "",
       jiraKey: "",
       requester: "",
       priority: "2",
@@ -249,6 +250,7 @@ export default function App() {
         title: data.title,
         status: data.status,
         desc: data.desc,
+        summary: data.summary || "",
         jiraKey: data.jiraKey,
         requester: data.requester || "",
         priority: data.priority || "2",
@@ -278,6 +280,7 @@ export default function App() {
         title,
         status: "new_idea",
         desc: "",
+        summary: "",
         jiraKey: "",
         requester: "",
         priority: "2",
@@ -351,6 +354,7 @@ export default function App() {
         title: raw.title || "Bez názvu",
         status: STATUSES.some((s) => s.id === raw.status) ? raw.status : "new_idea",
         desc: raw.desc || "",
+        summary: raw.summary || "",
         jiraKey: raw.jiraKey || "",
         requester: raw.requester || "",
         priority: raw.priority ? String(raw.priority) : "2",
@@ -1391,6 +1395,7 @@ function ItemForm({ initial, onSave, onCancel }) {
   const [title, setTitle] = useState(initial?.title || "");
   const [status, setStatus] = useState(initial?.status || "new_idea");
   const [desc, setDesc] = useState(initial?.desc || "");
+  const [summary, setSummary] = useState(initial?.summary || "");
   const [jiraKey, setJiraKey] = useState(initial?.jiraKey || "");
   const [requester, setRequester] = useState(initial?.requester || "");
   const [priority, setPriority] = useState(initial?.priority || "2");
@@ -1490,6 +1495,16 @@ function ItemForm({ initial, onSave, onCancel }) {
         </select>
       </div>
       <textarea className="rm-input" style={{ width: "100%", marginBottom: 8, resize: "vertical", minHeight: 50 }} placeholder="Stručný popis..." value={desc} onChange={(e) => setDesc(e.target.value)} />
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ fontSize: 10.5, color: "#5b6272", marginBottom: 3 }}>Shrnutí pro export/management (pokud vyplněno, použije se místo popisu v XLSX exportu)</div>
+        <textarea
+          className="rm-input"
+          style={{ width: "100%", resize: "vertical", minHeight: 40 }}
+          placeholder="Krátké shrnutí pro management, např. „Digitalizace objednávání vakcín / Online formulář přes FZ“"
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+        />
+      </div>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button className="rm-btn" onClick={onCancel}>
           Zrušit
@@ -1503,6 +1518,7 @@ function ItemForm({ initial, onSave, onCancel }) {
               title: title.trim(),
               status,
               desc: desc.trim(),
+              summary: summary.trim(),
               jiraKey: jiraKey.trim(),
               requester: requester.trim(),
               priority,

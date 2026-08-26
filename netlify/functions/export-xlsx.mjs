@@ -17,6 +17,7 @@ export default async (req) => {
     sheet.columns = [
       { header: "Aplikace", key: "app", width: 20 },
       { header: "Položka", key: "title", width: 42 },
+      { header: "Zadavatel", key: "requester", width: 18 },
       { header: "Priorita", key: "priority", width: 10 },
       { header: "Stav", key: "status", width: 26 },
       { header: "Timeframe (original)", key: "tfOrig", width: 18 },
@@ -39,13 +40,14 @@ export default async (req) => {
       sheet.addRow({
         app: appName,
         title: item.title,
+        requester: item.requester || "",
         priority: item.priority ? `P${item.priority}` : "",
         status: STATUSES.find((s) => s.id === item.status)?.label || item.status,
         tfOrig: item.timeframeOriginal || "",
         tfV2: item.timeframeV2 || "",
         md: md || "",
         priceCzk: price || "",
-        desc: item.desc || "",
+        desc: item.summary || item.desc || "",
       });
     }
     sheet.addRow({});
