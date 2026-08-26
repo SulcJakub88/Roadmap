@@ -1367,9 +1367,8 @@ function BoardView({ items, apps, selectedApp, onOpen, selectedIds, toggleSelect
                                 fontSize: 11,
                                 color: "#e8a33d",
                                 fontStyle: "italic",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
                               }}
                             >
                               {last.text}
