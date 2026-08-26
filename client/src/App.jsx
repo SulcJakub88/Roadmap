@@ -1251,7 +1251,14 @@ export default function App() {
             })}
         </div>
         ) : (
-          <BoardView items={visibleItems} apps={apps} selectedApp={selectedApp} onOpen={(item) => setEditingItem(item.id)} />
+          <BoardView
+            items={visibleItems}
+            apps={apps}
+            selectedApp={selectedApp}
+            onOpen={(item) => setEditingItem(item.id)}
+            selectedIds={selectedIds}
+            toggleSelect={toggleSelect}
+          />
         )}
       </div>
       {jiraDraftItem && <JiraDraftModal item={jiraDraftItem} jiraDomain={jiraDomain} onClose={() => setJiraDraftItem(null)} />}
@@ -1283,7 +1290,7 @@ export default function App() {
   );
 }
 
-function BoardView({ items, apps, selectedApp, onOpen }) {
+function BoardView({ items, apps, selectedApp, onOpen, selectedIds, toggleSelect }) {
   return (
     <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8 }}>
       {STATUSES.map((s) => {
@@ -1303,15 +1310,24 @@ function BoardView({ items, apps, selectedApp, onOpen }) {
                     key={item.id}
                     onClick={() => onOpen(item)}
                     style={{
-                      border: "1px solid #1e222b",
+                      border: selectedIds[item.id] ? "1px solid #5b8cff" : "1px solid #1e222b",
                       borderLeft: `3px solid ${s.color}`,
                       borderRadius: 6,
-                      background: "#12151b",
+                      background: selectedIds[item.id] ? "#5b8cff14" : "#12151b",
                       padding: "8px 10px",
                       cursor: "pointer",
                     }}
                   >
-                    <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
+                      <input
+                        type="checkbox"
+                        checked={!!selectedIds[item.id]}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => toggleSelect(item.id)}
+                        style={{ marginTop: 2, flexShrink: 0 }}
+                      />
+                      <div style={{ fontSize: 12.5, fontWeight: 600 }}>{item.title}</div>
+                    </div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
                       {!selectedApp && app && (
                         <span className="mono" style={{ fontSize: 10, color: app.color }}>
