@@ -101,6 +101,10 @@ export default function App() {
   const [jiraLastSync, setJiraLastSync] = useState(null);
   const [activeFilter, setActiveFilter] = useState(null);
   const [activeDiscuss, setActiveDiscuss] = useState(null);
+  const [filterTimeframe, setFilterTimeframe] = useState("");
+  const [filterRequester, setFilterRequester] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterJiraStatus, setFilterJiraStatus] = useState("");
   const [jiraDraftItem, setJiraDraftItem] = useState(null);
   const [noteDraftId, setNoteDraftId] = useState(null);
   const [noteDraftText, setNoteDraftText] = useState("");
@@ -167,6 +171,9 @@ export default function App() {
   ];
 
   const discussContexts = [...new Set(items.map((i) => (i.discussWith || "").trim()).filter(Boolean))];
+  const timeframeOptions = [...new Set(items.map((i) => (i.timeframeV2 || i.timeframeOriginal || "").trim()).filter(Boolean))];
+  const requesterOptions = [...new Set(items.map((i) => (i.requester || "").trim()).filter(Boolean))];
+  const jiraStatusOptions = [...new Set(items.map((i) => (i.jiraStatusRaw || "").trim()).filter(Boolean))];
 
   const visibleItems = (
     activeFilter === "__discuss__"
@@ -174,6 +181,12 @@ export default function App() {
       : activeFilter
       ? scopedItems.filter(FILTERS.find((f) => f.id === activeFilter)?.test || (() => true))
       : scopedItems
+  ).filter(
+    (i) =>
+      (!filterTimeframe || (i.timeframeV2 || i.timeframeOriginal || "").trim() === filterTimeframe) &&
+      (!filterRequester || (i.requester || "").trim() === filterRequester) &&
+      (!filterStatus || i.status === filterStatus) &&
+      (!filterJiraStatus || (i.jiraStatusRaw || "").trim() === filterJiraStatus)
   );
   const unsortedCount = items.filter((i) => !i.appId).length;
   const jiraLinkedCount = items.filter((i) => i.jiraKey).length;
@@ -874,6 +887,54 @@ export default function App() {
           })}
         </div>
 
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          <select className="rm-input mono" style={{ fontSize: 11.5, padding: "4px 8px" }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="">Stav: vše</option>
+            {STATUSES.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          <select className="rm-input mono" style={{ fontSize: 11.5, padding: "4px 8px" }} value={filterTimeframe} onChange={(e) => setFilterTimeframe(e.target.value)}>
+            <option value="">Timeframe: vše</option>
+            {timeframeOptions.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          <select className="rm-input mono" style={{ fontSize: 11.5, padding: "4px 8px" }} value={filterRequester} onChange={(e) => setFilterRequester(e.target.value)}>
+            <option value="">Zadavatel: vše</option>
+            {requesterOptions.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+          <select className="rm-input mono" style={{ fontSize: 11.5, padding: "4px 8px" }} value={filterJiraStatus} onChange={(e) => setFilterJiraStatus(e.target.value)}>
+            <option value="">Jira stav: vše</option>
+            {jiraStatusOptions.map((j) => (
+              <option key={j} value={j}>
+                {j}
+              </option>
+            ))}
+          </select>
+          {(filterStatus || filterTimeframe || filterRequester || filterJiraStatus) && (
+            <button
+              className="rm-btn"
+              onClick={() => {
+                setFilterStatus("");
+                setFilterTimeframe("");
+                setFilterRequester("");
+                setFilterJiraStatus("");
+              }}
+            >
+              Zrušit filtry
+            </button>
+          )}
+        </div>
+
         {Object.keys(selectedIds).length > 0 &&
           (() => {
             const selItems = items.filter((i) => selectedIds[i.id]);
@@ -1194,6 +1255,30 @@ export default function App() {
         )}
       </div>
       {jiraDraftItem && <JiraDraftModal item={jiraDraftItem} jiraDomain={jiraDomain} onClose={() => setJiraDraftItem(null)} />}
+      {view === "board" && editingItem && (() => {
+        const item = items.find((i) => i.id === editingItem);
+        if (!item) return null;
+        return (
+          <div
+            style={{ position: "fixed", inset: 0, background: "#00000099", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}
+            onClick={() => setEditingItem(null)}
+          >
+            <div
+              style={{ background: "#12151b", border: "1px solid #2c313d", borderRadius: 10, padding: 18, width: 560, maxWidth: "90vw", maxHeight: "85vh", overflowY: "auto" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ItemForm
+                initial={item}
+                onSave={(d) => {
+                  updateItem(item.id, d);
+                  setEditingItem(null);
+                }}
+                onCancel={() => setEditingItem(null)}
+              />
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
